@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>수학 용사 · 드래곤 탑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#171A33;      /* 성의 밤하늘 */
+  --night2:#232847;
+  --stone:#3D4468;
+  --parch:#F6EAD0;      /* 양피지 */
+  --parch2:#EADCBC;
+  --gold:#F0B23A;
+  --gold-d:#C08820;
+  --ember:#DC4B36;      /* 용의 불꽃 */
+  --leaf:#5AA35C;
+  --ink:#2B2312;
+  --ink2:#6B5F44;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;min-height:100%;}
+body{
+  font-family:'Gowun Dodum',sans-serif;color:var(--parch);
+  background:
+    radial-gradient(ellipse at 50% 0%, #2C3157 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 100%, #1E2240 0%, transparent 55%),
+    var(--night);
+  -webkit-tap-highlight-color:transparent;
+}
+/* 밤하늘의 별 */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 14%, #fff, transparent),
+    radial-gradient(1px 1px at 62% 9%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 84% 22%, #FFE9B0, transparent),
+    radial-gradient(1px 1px at 33% 27%, #fff, transparent),
+    radial-gradient(1px 1px at 74% 40%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 24% 46%, #FFE9B0, transparent),
+    radial-gradient(1px 1px at 92% 58%, #fff, transparent);
+}
+.dh{font-family:'Do Hyeon',sans-serif;}
+.jua{font-family:'Jua',sans-serif;}
+
+#app{max-width:480px;margin:0 auto;min-height:100vh;padding:18px 16px 44px;position:relative;z-index:1;}
+.screen{display:none;}
+.screen.on{display:block;animation:fade .3s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ─── 머리말 ─── */
+.crest{text-align:center;margin-bottom:18px;}
+.crest .sub{font-size:11.5px;letter-spacing:.28em;color:var(--gold);margin-bottom:5px;}
+.crest h1{font-family:'Do Hyeon',sans-serif;font-size:32px;margin:0;letter-spacing:.02em;
+  text-shadow:0 3px 0 rgba(0,0,0,.35);}
+.crest .tag{font-size:13px;color:#B9BFDF;margin-top:6px;}
+
+/* ─── 양피지 판 ─── */
+.scroll{
+  background:linear-gradient(180deg,var(--parch),var(--parch2));
+  color:var(--ink);border-radius:12px;padding:18px;
+  border:3px solid var(--gold-d);
+  box-shadow:0 10px 0 rgba(0,0,0,.28), inset 0 0 0 2px rgba(255,255,255,.35);
+  margin-bottom:16px;
+}
+.scroll h2{font-family:'Do Hyeon',sans-serif;font-size:18px;margin:0 0 12px;color:var(--ink);}
+
+/* ─── 학년 선택(방패) ─── */
+.grades{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;}
+.shield{
+  position:relative;border:none;cursor:pointer;padding:16px 6px 18px;
+  background:linear-gradient(180deg,#4A5385,#333A63);
+  border-radius:11px 11px 26px 26px;
+  border:2.5px solid var(--gold-d);
+  color:var(--parch);font-family:'Do Hyeon',sans-serif;
+  box-shadow:0 5px 0 rgba(0,0,0,.32);
+  transition:transform .12s,box-shadow .12s;
+}
+.shield:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.32);}
+.shield:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+.shield .g{display:block;font-size:24px;line-height:1.1;}
+.shield .u{display:block;font-size:11px;color:#C3C9EC;margin-top:5px;
+  font-family:'Gowun Dodum',sans-serif;line-height:1.3;}
+.shield .w{display:block;font-size:11px;color:var(--gold);margin-top:6px;}
+.shield.cleared{background:linear-gradient(180deg,#5E6AA6,#414A7D);}
+.shield .crown{position:absolute;top:-9px;right:-5px;font-size:17px;}
+
+/* ─── 스테이지 지도 ─── */
+.stage-list{display:flex;flex-direction:column;gap:9px;}
+.stage{
+  display:flex;align-items:center;gap:12px;width:100%;cursor:pointer;
+  background:#FFFDF6;border:2.5px solid var(--ink2);border-radius:10px;
+  padding:12px 13px;text-align:left;font-family:inherit;color:var(--ink);
+  box-shadow:0 3px 0 rgba(107,95,68,.4);transition:transform .1s;
+}
+.stage:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(107,95,68,.4);}
+.stage:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+.stage .n{
+  flex:none;width:31px;height:31px;border-radius:8px;
+  background:var(--stone);color:var(--parch);
+  display:grid;place-items:center;font-family:'Do Hyeon',sans-serif;font-size:15px;
+}
+.stage .t{flex:1;}
+.stage .t b{font-family:'Do Hyeon',sans-serif;font-size:15px;font-weight:400;display:block;}
+.stage .t span{font-size:11.5px;color:var(--ink2);}
+.stage .s{font-size:15px;letter-spacing:1px;}
+.stage.boss{background:#FFF3E0;border-color:var(--ember);}
+.stage.boss .n{background:var(--ember);}
+.stage.done{background:#F0F7EC;}
+
+.back{
+  background:none;border:none;color:#AEB6DE;font-family:inherit;font-size:13.5px;
+  cursor:pointer;padding:6px 2px;margin-bottom:10px;
+}
+.back:hover{color:var(--gold);}
+
+/* ─── 전투 상단 ─── */
+.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;}
+.hearts{font-size:19px;letter-spacing:2px;}
+.hearts .lost{opacity:.22;}
+.coins{font-family:'Do Hyeon',sans-serif;font-size:16px;color:var(--gold);}
+.floorlab{font-size:12px;color:#AEB6DE;}
+
+/* ─── 탑 ─── */
+.tower{
+  position:relative;height:186px;margin-bottom:14px;
+  display:flex;align-items:flex-end;justify-content:center;gap:0;
+}
+.tower-body{
+  position:relative;width:132px;height:100%;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 29px, rgba(0,0,0,.22) 29px 31px),
+    repeating-linear-gradient(90deg, transparent 0 32px, rgba(0,0,0,.16) 32px 34px),
+    linear-gradient(180deg,#5A628F,#3A406A);
+  border:2.5px solid #262B4C;border-bottom:none;border-radius:5px 5px 0 0;
+}
+/* 성가퀴 */
+.tower-body::before{
+  content:"";position:absolute;top:-11px;left:-2.5px;right:-2.5px;height:11px;
+  background:
+    repeating-linear-gradient(90deg,#5A628F 0 14px, transparent 14px 25px);
+  border-radius:2px;
+}
+.knight{
+  position:absolute;left:50%;transform:translateX(-50%);
+  bottom:2px;width:40px;transition:bottom .45s cubic-bezier(.34,1.4,.6,1);
+  z-index:2;
+}
+.knight.hop{animation:hop .45s ease;}
+@keyframes hop{0%,100%{transform:translateX(-50%) translateY(0)}45%{transform:translateX(-50%) translateY(-9px)}}
+.knight.hurt{animation:hurt .4s ease;}
+@keyframes hurt{0%,100%{transform:translateX(-50%)}25%{transform:translateX(-50%) rotate(-11deg)}75%{transform:translateX(-50%) rotate(11deg)}}
+.dragon{
+  position:absolute;right:-6px;top:-16px;width:66px;z-index:3;
+  animation:float 2.6s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.dragon.rage{animation:rage .5s ease 3;}
+@keyframes rage{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.13)}}
+.treasure{position:absolute;left:8px;top:-10px;width:34px;z-index:3;}
+
+/* ─── 문제 ─── */
+.qhead{font-size:11.5px;letter-spacing:.14em;color:var(--ink2);margin-bottom:9px;}
+.qtext{font-family:'Do Hyeon',sans-serif;font-size:28px;text-align:center;line-height:1.5;
+  padding:8px 0 14px;color:var(--ink);}
+.qtext.words{font-family:'Gowun Dodum',sans-serif;font-size:16.5px;line-height:1.8;text-align:left;}
+.qtext.calc{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;}
+.frac{display:inline-flex;flex-direction:column;align-items:center;}
+.frac .n,.frac .d{font-size:21px;line-height:1.2;}
+.frac .b{width:100%;min-width:30px;height:2.5px;background:var(--ink);margin:3px 0;}
+.op{font-size:24px;}
+
+input[type=number]{-moz-appearance:textfield;appearance:textfield;}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.slot{
+  width:100%;padding:13px 8px;border:none;border-bottom:3px solid var(--ink2);
+  background:transparent;font-family:'Jua',sans-serif;font-size:29px;text-align:center;
+  color:var(--ember);outline:none;
+}
+.slot::placeholder{color:#C9BE9E;font-size:18px;}
+.slot:focus{border-bottom-color:var(--ember);}
+.frac-slot{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.frac-slot input{
+  width:106px;padding:5px 0;border:none;background:transparent;
+  font-family:'Jua',sans-serif;font-size:26px;text-align:center;color:var(--ember);outline:none;
+}
+.frac-slot input::placeholder{color:#C9BE9E;font-size:15px;}
+.frac-slot .b{width:120px;height:3px;background:var(--ink2);}
+.hint{font-size:11.5px;color:var(--ink2);text-align:center;margin-top:9px;min-height:16px;}
+
+.say{
+  min-height:28px;text-align:center;font-family:'Jua',sans-serif;font-size:19px;
+  margin:12px 0 4px;color:var(--ember);
+}
+.say.ok{color:var(--leaf);}
+
+.btn{
+  width:100%;padding:16px;border:2.5px solid var(--gold-d);border-radius:11px;
+  background:linear-gradient(180deg,var(--gold),var(--gold-d));color:#3A2A05;
+  font-family:'Do Hyeon',sans-serif;font-size:18px;cursor:pointer;
+  box-shadow:0 5px 0 rgba(0,0,0,.34);transition:transform .1s,box-shadow .1s;
+}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.34);}
+.btn:focus-visible{outline:3px solid #fff;outline-offset:3px;}
+.btn.quiet{
+  background:none;border-color:#4A5385;color:#AEB6DE;box-shadow:none;
+  font-size:14.5px;padding:11px;margin-top:9px;
+}
+.btn.quiet:active{transform:none;}
+
+/* ─── 결과 ─── */
+.result-hero{text-align:center;padding:6px 0 14px;}
+.result-hero .big{font-family:'Do Hyeon',sans-serif;font-size:29px;margin-bottom:6px;}
+.result-hero .stars{font-size:32px;letter-spacing:5px;}
+.result-hero svg{width:96px;}
+.pop{animation:pop .5s cubic-bezier(.34,1.6,.5,1);}
+@keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+
+.row{display:flex;justify-content:space-between;padding:10px 2px;font-size:14px;}
+.row+.row{border-top:1px dashed rgba(107,95,68,.35);}
+.row b{font-family:'Do Hyeon',sans-serif;font-size:19px;color:var(--ember);}
+
+.wrongs{margin-top:12px;}
+.wrongs h3{font-size:11.5px;letter-spacing:.14em;color:var(--ink2);margin:0 0 8px;}
+.wr{border-left:3px solid var(--ember);background:#FFF6F2;padding:9px 11px;
+  margin-bottom:6px;font-size:13px;line-height:1.65;}
+.wr .a{font-family:'Jua',sans-serif;font-size:16px;color:var(--ember);}
+
+footer{text-align:center;font-size:11px;color:#7B83AC;margin-top:18px;}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}
+}
+@media (max-width:360px){
+  .crest h1{font-size:26px;}
+  .qtext{font-size:23px;}
+  .shield .g{font-size:23px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ 학년 선택 ══ -->
+  <section class="screen on" id="s-grade">
+    <div class="crest">
+      <div class="sub">수 학 용 사</div>
+      <h1>드래곤 탑</h1>
+      <div class="tag">문제를 풀어 탑을 오르고 용을 만나자!</div>
+    </div>
+    <div class="scroll">
+      <h2>모험을 시작할 학년을 골라줘</h2>
+      <div class="grades" id="grades"></div>
+    </div>
+    <footer>인터넷 없이도 즐길 수 있어요 · 문제는 풀 때마다 새로 만들어집니다</footer>
+  </section>
+
+  <!-- ══ 스테이지 선택 ══ -->
+  <section class="screen" id="s-stage">
+    <button class="back" id="btn-back">← 학년 다시 고르기</button>
+    <div class="crest">
+      <div class="sub" id="worldSub">제 1 장</div>
+      <h1 id="worldName">풀숲 마을</h1>
+      <div class="tag" id="worldTag"></div>
+    </div>
+    <div class="scroll">
+      <h2>어느 탑에 도전할까?</h2>
+      <div class="stage-list" id="stages"></div>
+    </div>
+  </section>
+
+  <!-- ══ 전투 ══ -->
+  <section class="screen" id="s-play">
+    <div class="hud">
+      <span class="hearts" id="hearts">♥♥♥</span>
+      <span class="floorlab" id="floorlab">1층 / 5층</span>
+      <span class="coins" id="coins">◎ 0</span>
+    </div>
+
+    <div class="tower">
+      <div class="tower-body">
+        <svg class="dragon" id="dragon" viewBox="0 0 72 56" aria-hidden="true">
+          <!-- 꼬리 -->
+          <path d="M12 40 Q2 42 4 32" stroke="#5E3595" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+          <!-- 날개 -->
+          <path d="M22 22 Q10 6 8 20 Q10 30 22 30Z" fill="#9A6BD4" stroke="#4E2C7A" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M50 22 Q62 6 64 20 Q62 30 50 30Z" fill="#9A6BD4" stroke="#4E2C7A" stroke-width="2" stroke-linejoin="round"/>
+          <!-- 몸통 -->
+          <ellipse cx="36" cy="32" rx="18" ry="14" fill="#7B4BB8" stroke="#4E2C7A" stroke-width="2.2"/>
+          <ellipse cx="36" cy="36" rx="10" ry="8" fill="#A886DB"/>
+          <!-- 머리 -->
+          <ellipse cx="36" cy="18" rx="13" ry="11" fill="#8A57C6" stroke="#4E2C7A" stroke-width="2.2"/>
+          <!-- 뿔 -->
+          <path d="M28 9 L24 1 L32 6Z" fill="#F0B23A" stroke="#8A5E10" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M44 9 L48 1 L40 6Z" fill="#F0B23A" stroke="#8A5E10" stroke-width="1.5" stroke-linejoin="round"/>
+          <!-- 눈 -->
+          <circle cx="31" cy="17" r="3.6" fill="#fff"/><circle cx="32" cy="17.5" r="1.9" fill="#1A1030"/>
+          <circle cx="41" cy="17" r="3.6" fill="#fff"/><circle cx="42" cy="17.5" r="1.9" fill="#1A1030"/>
+          <!-- 콧구멍과 입 -->
+          <circle cx="33" cy="24" r="1" fill="#4E2C7A"/><circle cx="39" cy="24" r="1" fill="#4E2C7A"/>
+          <path d="M31 27 Q36 30 41 27" stroke="#4E2C7A" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <svg class="treasure" id="treasure" viewBox="0 0 34 28" aria-hidden="true" style="display:none">
+          <rect x="2" y="10" width="30" height="16" rx="2.5" fill="#B9762F" stroke="#7A4A18" stroke-width="2"/>
+          <path d="M2 12 Q17 0 32 12Z" fill="#D18C3C" stroke="#7A4A18" stroke-width="2"/>
+          <rect x="14" y="13" width="6" height="8" rx="1.5" fill="#F0B23A" stroke="#7A4A18" stroke-width="1.6"/>
+        </svg>
+        <svg class="knight" id="knight" viewBox="0 0 40 52" aria-hidden="true">
+          <!-- 다리 -->
+          <rect x="13" y="41" width="6" height="9" rx="2" fill="#3A4A6B"/>
+          <rect x="21" y="41" width="6" height="9" rx="2" fill="#3A4A6B"/>
+          <!-- 몸통 갑옷 -->
+          <path d="M12 24 L28 24 L30 42 L10 42Z" fill="#4E7FC4" stroke="#22375C" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M14 30 L26 30" stroke="#7BA6DC" stroke-width="2" stroke-linecap="round"/>
+          <!-- 투구 -->
+          <path d="M11 16 Q11 6 20 6 Q29 6 29 16 L29 22 Q20 25 11 22Z" fill="#C9D4E8" stroke="#22375C" stroke-width="2" stroke-linejoin="round"/>
+          <rect x="12.5" y="15" width="15" height="4" rx="1.4" fill="#22375C"/>
+          <!-- 깃털 장식 -->
+          <path d="M20 6 Q19 -1 24 0 Q22 4 21 6Z" fill="#DC4B36"/>
+          <!-- 방패 -->
+          <path d="M4 27 L11 25 L11 36 Q7 39 4 36Z" fill="#F0B23A" stroke="#8A5E10" stroke-width="1.8" stroke-linejoin="round"/>
+          <!-- 검 -->
+          <path d="M33 34 L33 12" stroke="#DCE4F0" stroke-width="3.4" stroke-linecap="round"/>
+          <path d="M33 10 L33 13" stroke="#9AA8C0" stroke-width="3.4" stroke-linecap="round"/>
+          <path d="M29 34 L37 34" stroke="#8A5E10" stroke-width="2.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="scroll">
+      <div class="qhead" id="qhead">덧셈 · 한 자리 수의 덧셈</div>
+      <div class="qtext" id="qtext">3 + 5</div>
+      <div id="slotArea"></div>
+      <div class="hint" id="hint"></div>
+    </div>
+
+    <div class="say jua" id="say" role="status" aria-live="polite"></div>
+    <button class="btn" id="btn-check">공격!</button>
+    <button class="btn quiet" id="btn-give">탑에서 내려가기</button>
+  </section>
+
+  <!-- ══ 결과 ══ -->
+  <section class="screen" id="s-end">
+    <div class="result-hero" id="hero"></div>
+    <div class="scroll">
+      <div class="row"><span>맞힌 문제</span><b id="e-correct">-</b></div>
+      <div class="row"><span>모은 금화</span><b id="e-coins">-</b></div>
+      <div class="row"><span>남은 목숨</span><b id="e-life">-</b></div>
+      <div class="row"><span>걸린 시간</span><b id="e-time">-</b></div>
+      <div class="wrongs" id="wrongs"></div>
+    </div>
+    <button class="btn" id="btn-retry">한 번 더 도전</button>
+    <button class="btn quiet" id="btn-map">다른 탑 고르기</button>
+  </section>
+
+</div>
+<script>
+/* ══════════ 도우미 ══════════ */
+function R(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function P(a){return a[R(0,a.length-1)];}
+function G2(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=b;b=a%b;a=t;}return a||1;}
+function LC(a,b){return Math.abs(a*b)/G2(a,b);}
+function SIM(n,d){var g=G2(n,d);return [n/g,d/g];}
+function N(unit,label,text,answer,opt){
+  var q={unit:unit,label:label,type:"number",text:text,answer:answer};
+  if(opt){for(var k in opt)q[k]=opt[k];}
+  return q;
+}
+function F(unit,label,frac,n,d,text){
+  return {unit:unit,label:label,type:"fraction",frac:frac,answerN:n,answerD:d,text:text};
+}
+
+/* ══════════ 1학년 ══════════ */
+function g1_add(){var a=R(1,9),b=R(1,9);return N("덧셈","한 자리 수의 덧셈",a+" + "+b,a+b);}
+function g1_sub(){var a=R(2,18),b=R(1,a-1);return N("뺄셈","한 자리 수의 뺄셈",a+" − "+b,a-b);}
+function g1_ten(){var a=R(1,9);return N("10 만들기","10을 가르고 모으기",a+" + □ = 10",10-a,{words:true,
+  text:a+"에 얼마를 더하면 10이 될까요?"});}
+function g1_big(){var s=[],n=R(3,4);
+  while(s.length<n){var v=R(1,50);if(s.indexOf(v)<0)s.push(v);}
+  return N("수의 크기","가장 큰 수 찾기","",Math.max.apply(null,s),{words:true,
+    text:"다음 수 중 가장 큰 수는 무엇일까요?  "+s.join(", ")});}
+function g1_clock(){var h=R(1,12);return N("시계 보기","몇 시일까요","",h,{words:true,
+  text:"긴바늘이 12를 가리키고 짧은바늘이 "+h+"을 가리킵니다. 몇 시일까요? (숫자만 쓰세요)"});}
+
+/* ══════════ 2학년 ══════════ */
+function g2_add(){var a=R(11,89),b=R(11,99-a>10?99-a:11);b=R(11,Math.max(12,99-a));
+  return N("덧셈","두 자리 수의 덧셈",a+" + "+b,a+b);}
+function g2_sub(){var a=R(30,99),b=R(11,a-1);return N("뺄셈","두 자리 수의 뺄셈",a+" − "+b,a-b);}
+function g2_mul(){var a=R(2,9),b=R(2,9);return N("곱셈구구",a+"단",a+" × "+b,a*b);}
+function g2_len(){
+  if(Math.random()<.5){var c=R(2,40);return N("길이 재기","cm를 mm로","",c*10,{words:true,
+    text:c+"cm는 몇 mm일까요?"});}
+  var m=R(2,40)*10;return N("길이 재기","mm를 cm로","",m/10,{words:true,text:m+"mm는 몇 cm일까요?"});}
+function g2_time(){var h=R(1,9),m=P([10,20,30,40,50]),add=P([10,20,30]);
+  var tot=m+add,nh=h+(tot>=60?1:0),nm=tot%60;
+  return N("시각과 시간","몇 분 뒤의 시각","",nm,{words:true,
+    text:h+"시 "+m+"분에서 "+add+"분이 지나면 "+nh+"시 몇 분일까요? (분만 쓰세요)"});}
+
+/* ══════════ 3학년 ══════════ */
+function g3_add(){var a=R(101,899),b=R(101,999-a>100?999-a:101);b=R(101,Math.max(102,999-a));
+  return N("덧셈과 뺄셈","세 자리 수의 덧셈",a+" + "+b,a+b);}
+function g3_sub(){var a=R(300,999),b=R(101,a-1);return N("덧셈과 뺄셈","세 자리 수의 뺄셈",a+" − "+b,a-b);}
+function g3_div(){var b=R(2,9),q=R(2,9);return N("나눗셈","나눗셈의 몫",(b*q)+" ÷ "+b,q);}
+function g3_mul(){var a=R(11,99),b=R(2,9);return N("곱셈","두 자리 × 한 자리",a+" × "+b,a*b);}
+function g3_frac(){var d=R(3,9),n=R(1,d-1);
+  var q=F("분수","전체와 부분",{n1:n,d1:d,single:true},n,d,
+    "색종이를 똑같이 "+d+"조각으로 나누고 "+n+"조각을 썼습니다. 쓴 부분은 전체의 얼마일까요?");
+  q.raw=true; return q;}
+function g3_time(){var a=R(1,5),b=R(10,50);
+  return N("시간의 계산","시간을 분으로","",a*60+b,{words:true,text:a+"시간 "+b+"분은 모두 몇 분일까요?"});}
+
+/* ══════════ 4학년 ══════════ */
+function g4_big(){var n=R(10000,99999),pl=P([{d:10000,l:"만"},{d:1000,l:"천"},{d:100,l:"백"}]);
+  return N("큰 수","자릿값 알기","",Math.floor(n/pl.d)%10,{words:true,
+    text:n+" 에서 "+pl.l+"의 자리 숫자는 무엇일까요?"});}
+function g4_mul(){var a=R(101,999),b=R(11,49);return N("곱셈","세 자리 × 두 자리",a+" × "+b,a*b);}
+function g4_div(){var b=R(11,40),q=R(3,30);return N("나눗셈","세 자리 ÷ 두 자리",(b*q)+" ÷ "+b,q);}
+function g4_angle(){
+  if(Math.random()<.5){var x=R(20,120),y=R(20,180-x-10);
+    return N("각도","삼각형 세 각의 합","",180-x-y,{words:true,
+      text:"삼각형의 두 각이 "+x+"°, "+y+"°입니다. 나머지 한 각은 몇 도일까요?"});}
+  var a=R(30,150);return N("각도","사각형 네 각의 합","",360-a-90-90,{words:true,
+    text:"사각형의 네 각 중 세 각이 "+a+"°, 90°, 90°입니다. 나머지 한 각은 몇 도일까요?"});}
+function g4_frac(){var d=R(3,9),n1=R(1,d-1),n2=R(1,d-1);
+  var isAdd=n1+n2<d;
+  if(!isAdd&&n1===n2){n2=n1>1?n1-1:n1+1;}
+  var hi=Math.max(n1,n2),lo=Math.min(n1,n2);
+  var num=isAdd?(n1+n2):(hi-lo);
+  var q=F("분수의 덧셈과 뺄셈","분모가 같은 분수",
+    {n1:isAdd?n1:hi,d1:d,op:isAdd?"+":"−",n2:isAdd?n2:lo,d2:d},num,d);
+  q.raw=true; return q;}
+function g4_dec(){var a=R(11,89)/10,b=R(11,89)/10;
+  if(Math.random()<.5)return N("소수","소수의 덧셈",a+" + "+b,Math.round((a+b)*10)/10,{dec:true});
+  var hi=Math.max(a,b),lo=Math.min(a,b);
+  if(hi===lo)hi=lo+0.5;
+  return N("소수","소수의 뺄셈",hi+" − "+lo,Math.round((hi-lo)*10)/10,{dec:true});}
+
+/* ══════════ 5학년 ══════════ */
+function g5_mix(){var v=[
+  function(){var a=R(2,15),b=R(2,9),c=R(2,9);return{t:a+" + "+b+" × "+c,a:a+b*c};},
+  function(){var a=R(2,12),b=R(2,12),c=R(2,8);return{t:"("+a+" + "+b+") × "+c,a:(a+b)*c};},
+  function(){var a=R(2,7),b=R(2,8),c=R(2,8),v=a*(b+c),d=Math.min(R(1,10),v-1);
+    return{t:a+" × ("+b+" + "+c+") − "+d,a:v-d};},
+  function(){var c=R(2,9),k=R(2,9),b=c*k,a=R(b+1,b+15);return{t:a+" − "+b+" ÷ "+c,a:a-k};}];
+  var p=P(v)();return N("혼합 계산","계산 순서",p.t,p.a);}
+function g5_gcf(){var isG=Math.random()<.5,a=R(4,36),b=R(4,36);while(a===b)b=R(4,36);
+  return N("약수와 배수",isG?"최대공약수":"최소공배수","",isG?G2(a,b):LC(a,b),{words:true,
+    text:a+"과(와) "+b+"의 "+(isG?"최대공약수":"최소공배수")+"는 얼마일까요?"});}
+function g5_reduce(){var sd=R(2,9),sn=R(1,sd-1);while(G2(sn,sd)!==1)sn=R(1,sd-1);
+  var m=R(2,4);return F("약분과 통분","기약분수로",{n1:sn*m,d1:sd*m,single:true},sn,sd);}
+function g5_frac(){var d1,d2,n1,n2,isAdd,t=0;
+  while(t<50){t++;d1=R(2,9);d2=R(2,9);if(d1===d2)continue;
+    n1=R(1,d1-1);n2=R(1,d2-1);isAdd=Math.random()<.6;
+    var v1=n1/d1,v2=n2/d2;
+    if(isAdd){if(v1+v2<1)break;}
+    else if(v1!==v2){if(v1<v2){var x=n1,y=d1;n1=n2;d1=d2;n2=x;d2=y;}break;}}
+  var L=LC(d1,d2),num=isAdd?(n1*(L/d1)+n2*(L/d2)):(n1*(L/d1)-n2*(L/d2)),s=SIM(Math.abs(num),L);
+  return F("분수의 덧셈과 뺄셈","분모가 다른 분수",{n1:n1,d1:d1,op:isAdd?"+":"−",n2:n2,d2:d2},s[0],s[1]);}
+function g5_area(){var t=[
+  function(){var w=R(3,15),h=R(3,15);return{t:"가로 "+w+"cm, 세로 "+h+"cm인 직사각형의 넓이는 몇 cm²일까요?",a:w*h,l:"직사각형의 넓이"};},
+  function(){var b=R(3,15),h=R(3,15);return{t:"밑변 "+b+"cm, 높이 "+h+"cm인 평행사변형의 넓이는 몇 cm²일까요?",a:b*h,l:"평행사변형의 넓이"};},
+  function(){var b=R(4,16),h=R(3,15);if(b*h%2)h=h+1;return{t:"밑변 "+b+"cm, 높이 "+h+"cm인 삼각형의 넓이는 몇 cm²일까요?",a:b*h/2,l:"삼각형의 넓이"};},
+  function(){var a=R(3,12),b=R(3,12),h=R(3,12);if((a+b)*h%2)h=h+1;return{t:"윗변 "+a+"cm, 아랫변 "+b+"cm, 높이 "+h+"cm인 사다리꼴의 넓이는 몇 cm²일까요?",a:(a+b)*h/2,l:"사다리꼴의 넓이"};}];
+  var p=P(t)();return N("다각형의 넓이",p.l,"",p.a,{words:true,text:p.t});}
+function g5_avg(){var k=P([3,4]),m=R(5,20),vals,tries=0;
+  do{tries++;var ds=[],sum=0;
+    for(var i=0;i<k-1;i++){var d=R(-5,5);ds.push(d);sum+=d;}
+    ds.push(-sum);vals=ds.map(function(d){return m+d;});
+  }while(vals.some(function(v){return v<=0;})&&tries<40);
+  return N("평균","평균 구하기","",m,{words:true,text:"다음 수들의 평균은 얼마일까요?  "+vals.join(", ")});}
+
+/* ══════════ 6학년 ══════════ */
+function g6_fracdiv(){
+  if(Math.random()<.5){var d=R(2,8),n=R(1,d-1),w=R(2,6),s=SIM(n,d*w);
+    return F("분수의 나눗셈","분수 ÷ 자연수",{n1:n,d1:d,op:"÷",n2:w,whole:true},s[0],s[1]);}
+  var d1=R(2,8),n1=R(1,d1-1),d2=R(2,8),n2=R(1,d2-1),s2=SIM(n1*d2,d1*n2);
+  return F("분수의 나눗셈","분수 ÷ 분수",{n1:n1,d1:d1,op:"÷",n2:n2,d2:d2},s2[0],s2[1]);}
+function g6_decdiv(){var q=R(11,89)/10,b=R(2,9);
+  return N("소수의 나눗셈","소수 ÷ 자연수",Math.round(q*b*10)/10+" ÷ "+b,q,{dec:true});}
+function g6_ratio(){
+  if(Math.random()<.5){var p=P([10,20,25,40,50,60,75,80]),tot=P([20,40,60,80,100,200]);
+    return N("비와 비율","백분율 구하기","",Math.round(tot*p/100),{words:true,
+      text:"전체 "+tot+"명 중 "+p+"%는 몇 명일까요?"});}
+  var a=P([2,4,5,10]),tot2=a*P([5,10,20]);
+  return N("비와 비율","비율을 백분율로","",Math.round(a/tot2*100),{words:true,
+    text:"전체 "+tot2+"개 중 "+a+"개는 몇 %일까요?"});}
+function g6_circle(){var r=R(2,10);
+  if(Math.random()<.5)return N("원의 넓이","원의 둘레 (원주율 3.14)","",Math.round(2*r*3.14*100)/100,{words:true,dec:true,
+    text:"반지름이 "+r+"cm인 원의 둘레는 몇 cm일까요? (원주율 3.14)"});
+  return N("원의 넓이","원의 넓이 (원주율 3.14)","",Math.round(r*r*3.14*100)/100,{words:true,dec:true,
+    text:"반지름이 "+r+"cm인 원의 넓이는 몇 cm²일까요? (원주율 3.14)"});}
+function g6_volume(){var a=R(3,12),b=R(3,12),c=R(3,12);
+  if(Math.random()<.5)return N("입체도형","직육면체의 부피","",a*b*c,{words:true,
+    text:"가로 "+a+"cm, 세로 "+b+"cm, 높이 "+c+"cm인 직육면체의 부피는 몇 cm³일까요?"});
+  return N("입체도형","직육면체의 겉넓이","",2*(a*b+b*c+c*a),{words:true,
+    text:"가로 "+a+"cm, 세로 "+b+"cm, 높이 "+c+"cm인 직육면체의 겉넓이는 몇 cm²일까요?"});}
+function g6_prop(){var r1=R(1,5),r2=R(1,5),unit=R(2,12),tot=(r1+r2)*unit;
+  return N("비례배분","비례배분하기","",r1*unit,{words:true,
+    text:"사탕 "+tot+"개를 "+r1+" : "+r2+"로 나누면 앞사람은 몇 개를 가질까요?"});}
+
+(function(){
+"use strict";
+
+/* ══════════ 학년 · 월드 구성 ══════════ */
+var WORLDS={
+ "1":{name:"풀숲 마을",tag:"작은 숫자들이 사는 곳",
+   st:[{k:g1_add,n:"덧셈의 문",d:"한 자리 수 더하기"},
+       {k:g1_sub,n:"뺄셈의 계곡",d:"한 자리 수 빼기"},
+       {k:g1_ten,n:"열의 다리",d:"10을 가르고 모으기"},
+       {k:g1_big,n:"큰 수 언덕",d:"가장 큰 수 찾기"},
+       {k:g1_clock,n:"시계탑",d:"몇 시일까요"}]},
+ "2":{name:"구구단 광산",tag:"곱셈의 보석이 잠든 곳",
+   st:[{k:g2_add,n:"덧셈 갱도",d:"두 자리 수 더하기"},
+       {k:g2_sub,n:"뺄셈 갱도",d:"두 자리 수 빼기"},
+       {k:g2_mul,n:"구구단 대장간",d:"곱셈구구"},
+       {k:g2_len,n:"길이의 방",d:"cm와 mm"},
+       {k:g2_time,n:"모래시계 탑",d:"시각과 시간"}]},
+ "3":{name:"나눗셈 숲",tag:"나누고 쪼개는 마법의 숲",
+   st:[{k:g3_add,n:"세 자리 성문",d:"세 자리 수 더하기"},
+       {k:g3_sub,n:"세 자리 해자",d:"세 자리 수 빼기"},
+       {k:g3_div,n:"나눗셈 제단",d:"몫 구하기"},
+       {k:g3_mul,n:"곱셈 회랑",d:"두 자리 × 한 자리"},
+       {k:g3_frac,n:"조각의 방",d:"분수의 첫걸음"},
+       {k:g3_time,n:"시간의 종",d:"시간을 분으로"}]},
+ "4":{name:"큰 수의 사막",tag:"거대한 숫자가 잠든 모래벌판",
+   st:[{k:g4_big,n:"자릿값 신전",d:"큰 수의 자릿값"},
+       {k:g4_mul,n:"곱셈 피라미드",d:"세 자리 × 두 자리"},
+       {k:g4_div,n:"나눗셈 오아시스",d:"세 자리 ÷ 두 자리"},
+       {k:g4_angle,n:"각도의 탑",d:"삼각형과 사각형의 각"},
+       {k:g4_frac,n:"분수 사원",d:"분모가 같은 분수"},
+       {k:g4_dec,n:"소수의 샘",d:"소수의 덧셈과 뺄셈"}]},
+ "5":{name:"분수 왕국",tag:"약분과 통분의 왕이 다스리는 땅",
+   st:[{k:g5_mix,n:"혼합 계산의 문",d:"계산 순서 지키기"},
+       {k:g5_gcf,n:"약수와 배수의 탑",d:"최대공약수·최소공배수"},
+       {k:g5_reduce,n:"약분의 방",d:"기약분수로"},
+       {k:g5_frac,n:"통분 대전당",d:"분모가 다른 분수"},
+       {k:g5_area,n:"도형의 정원",d:"다각형의 넓이"},
+       {k:g5_avg,n:"평균의 저울",d:"평균 구하기"}]},
+ "6":{name:"드래곤 성",tag:"마지막 시험이 기다리는 곳",
+   st:[{k:g6_fracdiv,n:"분수 나눗셈 홀",d:"분수 ÷ 분수"},
+       {k:g6_decdiv,n:"소수 나눗셈 홀",d:"소수 ÷ 자연수"},
+       {k:g6_ratio,n:"비율의 옥좌",d:"비와 백분율"},
+       {k:g6_circle,n:"원형 광장",d:"원의 둘레와 넓이"},
+       {k:g6_volume,n:"입체의 보고",d:"부피와 겉넓이"},
+       {k:g6_prop,n:"비례배분의 저울",d:"비례배분"}]}
+};
+var FLOORS=5;
+
+/* ══════════ 상태 ══════════ */
+var S={grade:"1",stage:0,boss:false,qs:[],idx:0,life:3,coins:0,
+       correct:0,wrong:[],t0:0,locked:false,cleared:{}};
+
+var $=function(i){return document.getElementById(i);};
+var SC={grade:$("s-grade"),stage:$("s-stage"),play:$("s-play"),end:$("s-end")};
+function show(n){
+  for(var k in SC)SC[k].classList.toggle("on",k===n);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ══════════ 학년 화면 ══════════ */
+function drawGrades(){
+  var h="";
+  for(var g=1;g<=6;g++){
+    var w=WORLDS[String(g)],done=(S.cleared[g]||[]).length,tot=w.st.length+1;
+    var full=done>=tot;
+    h+='<button class="shield'+(full?' cleared':'')+'" data-g="'+g+'">'+
+       (full?'<span class="crown">👑</span>':'')+
+       '<span class="g">'+g+'학년</span>'+
+       '<span class="u">'+w.name+'</span>'+
+       '<span class="w">'+done+' / '+tot+'</span></button>';
+  }
+  $("grades").innerHTML=h;
+  Array.prototype.forEach.call($("grades").children,function(b){
+    b.addEventListener("click",function(){
+      S.grade=b.dataset.g; drawStages(); show("stage");
+    });
+  });
+}
+
+/* ══════════ 스테이지 화면 ══════════ */
+function drawStages(){
+  var w=WORLDS[S.grade],cl=S.cleared[S.grade]||[];
+  $("worldSub").textContent="제 "+S.grade+" 장";
+  $("worldName").textContent=w.name;
+  $("worldTag").textContent=w.tag;
+  var h="";
+  w.st.forEach(function(s,i){
+    var done=cl.indexOf(i)>=0;
+    h+='<button class="stage'+(done?' done':'')+'" data-i="'+i+'">'+
+       '<span class="n">'+(i+1)+'</span>'+
+       '<span class="t"><b>'+s.n+'</b><span>'+s.d+'</span></span>'+
+       '<span class="s">'+(done?"⭐":"·")+'</span></button>';
+  });
+  var bd=cl.indexOf(99)>=0;
+  h+='<button class="stage boss'+(bd?' done':'')+'" data-i="99">'+
+     '<span class="n">🐉</span>'+
+     '<span class="t"><b>용의 둥지</b><span>전 단원이 섞여 나와요</span></span>'+
+     '<span class="s">'+(bd?"👑":"·")+'</span></button>';
+  $("stages").innerHTML=h;
+  Array.prototype.forEach.call($("stages").children,function(b){
+    b.addEventListener("click",function(){ start(parseInt(b.dataset.i,10)); });
+  });
+}
+$("btn-back").addEventListener("click",function(){drawGrades();show("grade");});
+$("btn-map").addEventListener("click",function(){drawStages();show("stage");});
+
+/* ══════════ 시작 ══════════ */
+function makeQ(){
+  var w=WORLDS[S.grade];
+  if(S.boss){ return w.st[Math.floor(Math.random()*w.st.length)].k(); }
+  return w.st[S.stage].k();
+}
+function start(i){
+  if(i!==undefined){ S.stage=(i===99?0:i); S.boss=(i===99); }
+  S.qs=[];S.idx=0;S.life=3;S.coins=0;S.correct=0;S.wrong=[];
+  S.t0=Date.now();S.locked=false;
+  for(var n=0;n<FLOORS;n++)S.qs.push(makeQ());
+  $("treasure").style.display="none";
+  $("dragon").style.display=S.boss?"":"";
+  show("play");
+  moveKnight(0);
+  render();
+}
+$("btn-retry").addEventListener("click",function(){start();});
+$("btn-give").addEventListener("click",function(){
+  if(confirm("지금까지 오른 만큼만 기록할까요?")) finish(false);
+});
+
+/* ══════════ 표시 ══════════ */
+function fracHTML(n,d){
+  return '<span class="frac"><span class="n">'+n+'</span><span class="b"></span><span class="d">'+d+'</span></span>';
+}
+function moveKnight(floor){
+  // 탑 높이 186px, 바닥 2px에서 시작해 층마다 올라감
+  var k=$("knight");
+  k.style.bottom=(2+floor*30)+"px";
+}
+function drawHearts(){
+  var h="";
+  for(var i=0;i<3;i++) h+= i<S.life ? "♥" : '<span class="lost">♥</span>';
+  $("hearts").innerHTML=h;
+}
+function render(){
+  var q=S.qs[S.idx];
+  $("floorlab").textContent=(S.idx+1)+"층 / "+FLOORS+"층";
+  $("coins").textContent="◎ "+S.coins;
+  drawHearts();
+  $("qhead").textContent=q.unit+" · "+q.label;
+  $("say").textContent="";$("say").className="say jua";
+  $("btn-check").textContent="공격!";
+  S.locked=false;
+
+  var qt=$("qtext");
+  if(q.type==="fraction"&&q.frac){
+    var f=q.frac,h=fracHTML(f.n1,f.d1);
+    if(f.single){h+='<span class="op">=</span><span class="op">?</span>';}
+    else if(f.whole){h+='<span class="op">'+f.op+'</span><span class="op">'+f.n2+'</span><span class="op">=</span><span class="op">?</span>';}
+    else{h+='<span class="op">'+f.op+'</span>'+fracHTML(f.n2,f.d2)+'<span class="op">=</span><span class="op">?</span>';}
+    qt.innerHTML=h;qt.className="qtext calc";
+    if(q.text){ qt.className="qtext words"; qt.textContent=q.text; }
+  } else if(q.words){
+    qt.textContent=q.text;qt.className="qtext words";
+  } else {
+    qt.textContent=q.text+" = ?";qt.className="qtext";
+  }
+
+  if(q.type==="fraction"){
+    $("slotArea").innerHTML='<div class="frac-slot">'+
+      '<input id="in-n" type="number" inputmode="numeric" placeholder="분자">'+
+      '<span class="b"></span>'+
+      '<input id="in-d" type="number" inputmode="numeric" placeholder="분모"></div>';
+    $("hint").textContent=q.raw?"위에 분자, 아래에 분모를 쓰세요":"기약분수로 답하세요";
+  } else {
+    $("slotArea").innerHTML='<input id="in-a" class="slot" type="number" step="any" inputmode="decimal" placeholder="답">';
+    $("hint").textContent=q.dec?"소수로 답하세요":"";
+  }
+  setTimeout(function(){var e=$("in-n")||$("in-a");if(e)e.focus();},60);
+}
+
+var WIN=["명중!","좋아!","한 층 올라갔다!","멋져!","용사답다!"];
+var LOSE=["아깝다!","다시 도전!","조금만 더!","힘내자!"];
+
+function check(){
+  if(S.locked)return;
+  var q=S.qs[S.idx],ok=false,mine="";
+  if(q.type==="fraction"){
+    var n=parseInt(($("in-n")||{}).value,10),d=parseInt(($("in-d")||{}).value,10);
+    if(isNaN(n)||isNaN(d)||d===0){$("say").textContent="답을 써줘!";return;}
+    mine=n+"/"+d;
+    ok=(n===q.answerN&&d===q.answerD);
+    if(!ok&&q.raw===undefined){ /* 기약분수만 인정 */ }
+  } else {
+    var v=parseFloat(($("in-a")||{}).value);
+    if(isNaN(v)){$("say").textContent="답을 써줘!";return;}
+    mine=String(v);
+    ok=Math.abs(v-q.answer)<(q.dec?0.02:0.0001);
+  }
+  S.locked=true;
+  $("hint").textContent="";
+  var say=$("say");
+
+  if(ok){
+    S.correct++;S.coins+=10;
+    say.textContent=WIN[Math.floor(Math.random()*WIN.length)];
+    say.className="say jua ok";
+    var k=$("knight");k.classList.remove("hop");void k.offsetWidth;k.classList.add("hop");
+    moveKnight(S.idx+1);
+    if(S.idx+1>=FLOORS){var dg=$("dragon");dg.classList.add("rage");}
+  } else {
+    S.life--;
+    say.textContent=LOSE[Math.floor(Math.random()*LOSE.length)]+" 답은 "+
+      (q.type==="fraction"?(q.answerN+"/"+q.answerD):q.answer);
+    say.className="say jua";
+    var kn=$("knight");kn.classList.remove("hurt");void kn.offsetWidth;kn.classList.add("hurt");
+    S.wrong.push({
+      q:(q.type==="fraction"&&q.frac&&!q.text)
+        ? (q.frac.single?q.frac.n1+"/"+q.frac.d1+" 를 나타내기"
+           :q.frac.whole?q.frac.n1+"/"+q.frac.d1+" "+q.frac.op+" "+q.frac.n2
+           :q.frac.n1+"/"+q.frac.d1+" "+q.frac.op+" "+q.frac.n2+"/"+q.frac.d2)
+        : q.text,
+      mine:mine,right:(q.type==="fraction"?(q.answerN+"/"+q.answerD):String(q.answer))
+    });
+  }
+  drawHearts();
+  $("coins").textContent="◎ "+S.coins;
+  $("btn-check").textContent=(S.life<=0)?"결과 보기":((S.idx+1>=FLOORS)?"보물 열기":"다음 층으로");
+}
+function next(){
+  if(S.life<=0){finish(false);return;}
+  S.idx++;
+  if(S.idx>=FLOORS){finish(true);}else{render();}
+}
+$("btn-check").addEventListener("click",function(){ S.locked?next():check(); });
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Enter"||!SC.play.classList.contains("on"))return;
+  e.preventDefault(); S.locked?next():check();
+});
+
+/* ══════════ 결과 ══════════ */
+function finish(reachedTop){
+  var sec=Math.round((Date.now()-S.t0)/1000);
+  var perfect=(S.correct===FLOORS);
+  if(reachedTop&&S.correct>=Math.ceil(FLOORS*0.6)){
+    var arr=S.cleared[S.grade]||(S.cleared[S.grade]=[]);
+    var id=S.boss?99:S.stage;
+    if(arr.indexOf(id)<0)arr.push(id);
+  }
+  var big,stars,art;
+  if(perfect){big="탑을 정복했다!";stars="⭐⭐⭐";art="👑";}
+  else if(reachedTop&&S.correct>=4){big="꼭대기 도착!";stars="⭐⭐";art="🏆";}
+  else if(reachedTop){big="탑을 올랐다";stars="⭐";art="🗝️";}
+  else{big="다음엔 더 높이!";stars="💪";art="🛡️";}
+
+  $("hero").innerHTML='<div class="big pop">'+big+'</div>'+
+    '<div class="stars pop">'+stars+'</div>'+
+    '<div style="font-size:42px;margin-top:6px" class="pop">'+art+'</div>';
+  if(perfect)$("treasure").style.display="";
+
+  $("e-correct").textContent=S.correct+" / "+FLOORS;
+  $("e-coins").textContent="◎ "+S.coins;
+  $("e-life").textContent="♥ "+Math.max(0,S.life);
+  $("e-time").textContent=Math.floor(sec/60)+"분 "+(sec%60)+"초";
+
+  var w=$("wrongs");
+  if(S.wrong.length){
+    var h='<h3>다시 볼 문제</h3>';
+    S.wrong.forEach(function(x){
+      h+='<div class="wr"><div>'+esc(x.q)+'</div><div>내 답 <span class="a">'+
+         esc(x.mine)+'</span> · 정답 <span class="a">'+esc(x.right)+'</span></div></div>';
+    });
+    w.innerHTML=h;
+  } else { w.innerHTML='<h3>다시 볼 문제</h3><div style="font-size:13px;color:var(--ink2)">하나도 안 틀렸어요!</div>'; }
+  show("end");
+}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+drawGrades();
+})();
+
+</script>
+</body>
+</html>
